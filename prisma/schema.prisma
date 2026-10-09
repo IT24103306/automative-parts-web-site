@@ -1,0 +1,214 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  imageUrl    String?
+  isActive    Boolean   @default(true)
+  order       Int       @default(0)
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Product {
+  id                String         @id @default(uuid())
+  name              String
+  partNumber        String         @unique
+  SKU               String         @unique
+  brand             String
+  categoryId        String
+  category          Category       @relation(fields: [categoryId], references: [id])
+  description       String?        @db.Text
+  specifications    Json?
+  compatibility     Json?
+  vehicleMake       String?
+  vehicleModel      String?
+  vehicleYear       String?
+  engine            String?
+  fuelType          String?
+  transmission      String?
+  stockQuantity     Int            @default(0)
+  lowStockThreshold Int            @default(5)
+  availability      Availability   @default(AVAILABLE)
+  featured          Boolean        @default(false)
+  active            Boolean        @default(true)
+  images            ProductImage[]
+  orderItems        OrderItem[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+}
+
+model ProductImage {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  isPrimary Boolean  @default(false)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String   @unique
+  email     String?
+  address   String?
+  orders    Order[]
+  notes     String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id             String               @id @default(uuid())
+  customerId     String
+  customer       Customer             @relation(fields: [customerId], references: [id])
+  status         OrderStatus          @default(PENDING)
+  deliveryAddress String
+  city           String
+  notes          String?              @db.Text
+  codEnabled     Boolean              @default(false)
+  paymentMethod  PaymentMethod        @default(COD)
+  paymentStatus  PaymentStatus        @default(UNPAID)
+  transactionRef String?
+  receiptUrl     String?
+  paymentDate    DateTime?
+  items          OrderItem[]
+  statusHistory  OrderStatusHistory[]
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+}
+
+model OrderStatusHistory {
+  id        String      @id @default(uuid())
+  orderId   String
+  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status    OrderStatus
+  notes     String?
+  createdAt DateTime    @default(now())
+}
+
+model SiteSettings {
+  id                  String   @id @default(uuid())
+  companyName         String
+  storeName           String
+  address             String
+  phone               String
+  whatsapp            String
+  email               String
+  businessHours       String?
+  socialLinks         Json?
+  codEnabled          Boolean  @default(true)
+  bankTransferEnabled Boolean  @default(false)
+  bankName            String?
+  bankAccountName     String?
+  bankAccountNumber   String?
+  bankBranch          String?
+  paymentInstructions String?  @db.Text
+  lowStockThreshold   Int      @default(5)
+  seoSettings         Json?
+  footerContent       String?  @db.Text
+  updatedAt           DateTime @updatedAt
+}
+
+model PreBooking {
+  id              String           @id @default(uuid())
+  customerName    String
+  phone           String
+  whatsapp        String?
+  email           String?
+  vehicleMake     String
+  vehicleModel    String
+  vehicleYear     String
+  partName        String
+  partNumber      String?
+  quantity        Int              @default(1)
+  preferredDate   String?
+  notes           String?          @db.Text
+  status          PreBookingStatus @default(NEW)
+  imageUrl        String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model CustomerEnquiry {
+  id            String   @id @default(uuid())
+  customerName  String
+  phone         String
+  whatsapp      String?
+  partRequired  String
+  vehicle       String
+  message       String?  @db.Text
+  createdAt     DateTime @default(now())
+}
+
+enum Availability {
+  AVAILABLE
+  LOW_STOCK
+  OUT_OF_STOCK
+  COMING_SOON
+  SPECIAL_ORDER
+}
+
+enum PreBookingStatus {
+  NEW
+  CONTACTED
+  CONFIRMED
+  WAITING
+  FULFILLED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  COD
+  BANK_TRANSFER
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAYMENT_SUBMITTED
+  PAYMENT_VERIFIED
+  PAYMENT_REJECTED
+  REFUND_PENDING
+  REFUNDED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PAYMENT_PENDING
+  PAYMENT_VERIFICATION
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  COMPLETED
+  CANCELLED
+}

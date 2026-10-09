@@ -1,0 +1,129 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #FF0000;
+  --color-dark: #0A0A0A;
+  --color-metallic: #8A8D91;
+  --font-sans: "Inter", sans-serif;
+  --font-heading: "Outfit", sans-serif;
+}
+
+@layer base {
+  :root {
+    --background: #000000;
+    --foreground: #ffffff;
+    --primary: #FF0000;
+    --primary-foreground: #ffffff;
+    --secondary: #1a1a1a;
+    --secondary-foreground: #ffffff;
+    --accent: #8A8D91;
+    --accent-foreground: #ffffff;
+    --destructive: #ff0000;
+    --destructive-foreground: #ffffff;
+    --muted: #262626;
+    --muted-foreground: #a3a3a3;
+    --card: #0a0a0a;
+    --card-foreground: #ffffff;
+    --border: #333333;
+    --input: #333333;
+    --ring: #FF0000;
+  }
+
+  body {
+    @apply bg-[var(--background)] text-[var(--foreground)] font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading tracking-tight;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .glassmorphism {
+    @apply bg-black/40 backdrop-blur-md border border-white/10;
+  }
+
+  /* NEW GRADIENT BACKGROUNDS */
+  .bg-gradient-black-graphite {
+    @apply bg-gradient-to-b from-[#050505] via-[#111111] to-[#1a1a1a];
+  }
+  .bg-gradient-graphite-red {
+    @apply bg-gradient-to-br from-[#1a1a1a] to-[#3a0000];
+  }
+  .bg-gradient-black-silver {
+    @apply bg-gradient-to-tr from-[#050505] to-[#2a2a2a];
+  }
+  .bg-gradient-radial-hero {
+    background: radial-gradient(circle at center, rgba(58, 0, 0, 0.4) 0%, rgba(5, 5, 5, 1) 70%);
+  }
+
+  /* SILVER TOUCH-UPS */
+  .silver-text-gradient {
+    @apply text-transparent bg-clip-text bg-gradient-to-b from-[#ffffff] via-[#d9d9d9] to-[#8e8e8e];
+  }
+  .silver-border {
+    @apply border border-[#8e8e8e]/40 shadow-[0_0_10px_rgba(207,207,207,0.1)];
+  }
+  .silver-border-hover:hover {
+    @apply border-[#cfcfcf]/80 shadow-[0_0_15px_rgba(207,207,207,0.3)];
+  }
+  
+  /* TYPOGRAPHY */
+  .vibrant-heading {
+    @apply font-heading font-black tracking-tight drop-shadow-lg text-white;
+  }
+
+  /* PREMIUM CARDS */
+  .premium-card {
+    @apply bg-gradient-to-br from-[#111111] to-[#0a0a0a] border border-[#8e8e8e]/30 rounded-sm shadow-[0_4px_20px_rgba(0,0,0,0.5)] transition-all duration-300;
+  }
+  .premium-card:hover {
+    @apply -translate-y-1 border-[#ff0000]/60 shadow-[0_10px_30px_rgba(255,0,0,0.15)];
+  }
+
+  /* BUTTONS */
+  .btn-primary {
+    @apply bg-gradient-to-b from-[#ff0000] to-[#c80000] text-white font-bold uppercase tracking-[0.2em] px-8 py-4 shadow-[0_0_15px_rgba(255,0,0,0.4)] transition-all duration-300;
+  }
+  .btn-primary:hover {
+    @apply from-[#ff1a1a] to-[#e60000] shadow-[0_0_25px_rgba(255,0,0,0.6)];
+  }
+  
+  .btn-secondary {
+    @apply bg-[#0a0a0a] border border-[#8e8e8e]/50 text-white font-bold uppercase tracking-[0.2em] px-8 py-4 transition-all duration-300;
+  }
+  .btn-secondary:hover {
+    @apply border-[#cfcfcf] shadow-[0_0_15px_rgba(255,0,0,0.2)] text-[#ff1a1a];
+  }
+
+  .metallic-panel {
+    @apply bg-gradient-to-br from-neutral-900 to-black border border-neutral-800 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)];
+  }
+
+  .metallic-border {
+    @apply border border-[#8e8e8e]/50 shadow-[0_0_15px_rgba(0,0,0,0.5)];
+  }
+
+  .red-glow {
+    @apply shadow-[0_0_20px_rgba(255,0,0,0.2)];
+  }
+
+  .red-glow-hover:hover {
+    @apply shadow-[0_0_25px_rgba(255,0,0,0.4)];
+    border-color: var(--primary);
+  }
+
+  .automotive-texture {
+    background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.03) 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
