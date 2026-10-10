@@ -43,9 +43,21 @@ export const loginAdmin = async (req: Request, res: Response): Promise<void> => 
         name: admin.name
       }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    
+    let safeErrorMessage = 'Internal server error';
+    
+    // Check if the error is related to JWT secret missing
+    if (error.message && error.message.includes('secretOrPrivateKey')) {
+      safeErrorMessage = 'Authentication configuration is incomplete on the server.';
+    } else if (error.message && error.message.includes('Illegal arguments')) {
+      safeErrorMessage = 'Admin password data is corrupted.';
+    } else {
+      safeErrorMessage = `Internal server error: ${error.message || 'Unknown error'}`;
+    }
+
+    res.status(500).json({ error: safeErrorMessage });
   }
 };
 
