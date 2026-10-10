@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../hooks/useCart';
 import { useSettings } from '../hooks/useSettings';
+import { normalizeSriLankaPhone, toWhatsAppNumber } from '../utils/contact';
 
 export default function StoreLayout() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -67,16 +68,16 @@ export default function StoreLayout() {
             {/* Actions */}
             <div className="flex items-center space-x-4 md:space-x-6">
               <a 
-                href={settings?.phone ? `tel:+${settings.phone.replace(/\D/g, '')}` : '#'}
-                onClick={(e) => { if (!settings?.phone) { e.preventDefault(); alert('Phone contact is currently unavailable.'); } }}
+                href={settings?.phone ? `tel:${normalizeSriLankaPhone(settings.phone)}` : undefined}
+                onClick={(e) => { if (!normalizeSriLankaPhone(settings?.phone)) { e.preventDefault(); alert('Phone contact is currently unavailable.'); } }}
                 className="hidden md:flex items-center text-white hover:text-primary transition-colors"
                 title="Call Owner"
               >
                 <Phone className="h-5 w-5" />
               </a>
               <a 
-                href={settings?.whatsapp ? `https://wa.me/${settings.whatsapp.replace(/\D/g, '')}` : '#'}
-                onClick={(e) => { if (!settings?.whatsapp) { e.preventDefault(); alert('WhatsApp contact is currently unavailable.'); } }}
+                href={settings?.whatsapp ? `https://wa.me/${toWhatsAppNumber(settings.whatsapp)}` : undefined}
+                onClick={(e) => { if (!toWhatsAppNumber(settings?.whatsapp)) { e.preventDefault(); alert('WhatsApp contact is currently unavailable.'); } }}
                 target="_blank" rel="noopener noreferrer"
                 className="hidden md:flex items-center text-white hover:text-green-500 transition-colors"
                 title="WhatsApp Owner"
@@ -148,15 +149,9 @@ export default function StoreLayout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
             <div>
-              <div className="flex items-center space-x-3 mb-6 opacity-80">
-                <div className="w-8 h-8 bg-primary flex items-center justify-center rounded-sm skew-x-[-10deg]">
-                  <span className="text-white font-black italic text-sm skew-x-[10deg]">NG</span>
-                </div>
-                <span className="text-lg font-bold tracking-widest text-white uppercase flex flex-col leading-tight">
-                  <span>MOTORS</span>
-                  <span className="text-[8px] text-neutral-500 tracking-[0.2em]">(PVT) LTD</span>
-                </span>
-              </div>
+              <Link to="/" className="inline-flex mb-6 opacity-90 hover:opacity-100 transition-opacity">
+                <img src="/images/ng-motors-logo.png" alt="NG Motors (Pvt) Ltd" className="h-16 w-auto max-w-full object-contain" />
+              </Link>
               <p className="text-neutral-400 text-sm leading-relaxed">
                 Premium Automotive Spare Parts.<br/>Quality, Reliability, Performance.
               </p>
@@ -173,7 +168,7 @@ export default function StoreLayout() {
               <h4 className="silver-text-gradient font-semibold mb-4 text-lg">Support</h4>
               <ul className="space-y-2 text-sm text-neutral-400">
                 <li><Link to="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
-                <li><a href="#" className="hover:text-primary transition-colors">WhatsApp Enquiry</a></li>
+                <li><a href={settings?.whatsapp ? `https://wa.me/${toWhatsAppNumber(settings.whatsapp)}` : undefined} onClick={(e) => { if (!toWhatsAppNumber(settings?.whatsapp)) e.preventDefault(); }} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">WhatsApp Enquiry</a></li>
                 <li><Link to="/admin/login" className="hover:text-primary transition-colors">Admin Login</Link></li>
               </ul>
             </div>
@@ -182,7 +177,8 @@ export default function StoreLayout() {
               <ul className="space-y-2 text-sm text-neutral-400">
                 <li>57, Kurunegala Road</li>
                 <li>Galewela, Sri Lanka</li>
-                <li className="mt-4"><a href="#" className="text-primary font-medium hover:underline">WhatsApp Us</a></li>
+                <li className="mt-4"><a href={settings?.whatsapp ? `https://wa.me/${toWhatsAppNumber(settings.whatsapp)}` : undefined} onClick={(e) => { if (!toWhatsAppNumber(settings?.whatsapp)) e.preventDefault(); }} target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline">WhatsApp Us</a></li>
+                {settings?.phone && <li><a href={`tel:${normalizeSriLankaPhone(settings.phone)}`} className="hover:text-white transition-colors">{settings.phone}</a></li>}
               </ul>
             </div>
           </div>
@@ -195,16 +191,16 @@ export default function StoreLayout() {
       {/* Mobile Sticky Action Bar */}
       <div className="md:hidden fixed bottom-0 left-0 w-full z-50 bg-black/95 backdrop-blur-xl border-t border-neutral-900 px-4 py-3 flex justify-between items-center shadow-[0_-10px_40px_rgba(0,0,0,0.8)]">
         <a 
-          href={settings?.phone ? `tel:+${settings.phone.replace(/\D/g, '')}` : '#'}
-          onClick={(e) => { if (!settings?.phone) { e.preventDefault(); alert('Phone contact is currently unavailable.'); } }}
+          href={settings?.phone ? `tel:${normalizeSriLankaPhone(settings.phone)}` : undefined}
+          onClick={(e) => { if (!normalizeSriLankaPhone(settings?.phone)) { e.preventDefault(); alert('Phone contact is currently unavailable.'); } }}
           className="flex-1 flex flex-col items-center justify-center text-neutral-400 hover:text-white transition-colors border-r border-neutral-800"
         >
           <Phone className="w-5 h-5 mb-1" />
           <span className="text-[10px] font-bold uppercase tracking-widest">Call</span>
         </a>
         <a 
-          href={settings?.whatsapp ? `https://wa.me/${settings.whatsapp.replace(/\D/g, '')}` : '#'}
-          onClick={(e) => { if (!settings?.whatsapp) { e.preventDefault(); alert('WhatsApp contact is currently unavailable.'); } }}
+          href={settings?.whatsapp ? `https://wa.me/${toWhatsAppNumber(settings.whatsapp)}` : undefined}
+          onClick={(e) => { if (!toWhatsAppNumber(settings?.whatsapp)) { e.preventDefault(); alert('WhatsApp contact is currently unavailable.'); } }}
           target="_blank" rel="noopener noreferrer"
           className="flex-1 flex flex-col items-center justify-center text-green-500 hover:text-green-400 transition-colors border-r border-neutral-800"
         >

@@ -2,6 +2,7 @@ import { MapPin, Phone, MessageCircle, Clock, Mail, Send } from 'lucide-react';
 import { useState } from 'react';
 import { useSettings } from '../hooks/useSettings';
 import { apiClient } from '../api/client';
+import { normalizeSriLankaPhone, toWhatsAppNumber } from '../utils/contact';
 
 export default function Contact() {
   const { settings } = useSettings();
@@ -17,14 +18,22 @@ export default function Contact() {
   });
 
   const handleWhatsApp = () => {
-    const text = `Hi, I have an inquiry regarding NG Motors.`;
-    const number = settings?.whatsapp?.replace(/\D/g, '') || '';
-    window.open(`https://wa.me/${number}?text=${encodeURIComponent(text)}`, '_blank');
+    const number = toWhatsAppNumber(settings?.whatsapp);
+    if (!number) {
+      window.alert('WhatsApp contact is currently unavailable. Please try again later.');
+      return;
+    }
+    const text = 'Hi, I have an inquiry regarding NG Motors.';
+    window.open(`https://wa.me/${number}?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
   };
-  
+
   const handleCall = () => {
-    const number = settings?.phone?.replace(/\D/g, '') || '';
-    window.location.href = `tel:+${number}`;
+    const number = normalizeSriLankaPhone(settings?.phone);
+    if (!number) {
+      window.alert('Phone contact is currently unavailable. Please try again later.');
+      return;
+    }
+    window.location.href = `tel:${number}`;
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -87,7 +96,13 @@ export default function Contact() {
                   </div>
                   <div>
                     <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-1">Phone</h3>
-                    <p className="text-neutral-400">077 751 7600</p>
+                    {settings?.phone ? (
+                      <a href={`tel:${normalizeSriLankaPhone(settings.phone)}`} className="text-neutral-400 hover:text-white transition-colors">
+                        {settings.phone}
+                      </a>
+                    ) : (
+                      <p className="text-neutral-400">Phone contact unavailable</p>
+                    )}
                   </div>
                 </div>
 

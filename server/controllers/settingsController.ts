@@ -24,6 +24,27 @@ export const getSettings = async (req: Request, res: Response): Promise<void> =>
       });
     }
 
+    // Safely migrate only known placeholder/legacy owner contacts. Existing custom
+    // business numbers are preserved; no product/order/customer data is touched.
+    const phoneDigits = (settings.phone ?? '').replace(/\D/g, '');
+    const whatsappDigits = (settings.whatsapp ?? '').replace(/\D/g, '');
+    const legacyOwnerNumbers = new Set(['1234567890', '0777517600', '94777517600']);
+    const contactUpdate: { phone?: string; whatsapp?: string } = {};
+
+    if (!phoneDigits || legacyOwnerNumbers.has(phoneDigits)) {
+      contactUpdate.phone = '+94777561007';
+    }
+    if (!whatsappDigits || legacyOwnerNumbers.has(whatsappDigits)) {
+      contactUpdate.whatsapp = '94777561007';
+    }
+
+    if (Object.keys(contactUpdate).length > 0) {
+      settings = await prisma.siteSettings.update({
+        where: { id: settings.id },
+        data: contactUpdate,
+      });
+    }
+
     res.json(settings);
   } catch (error) {
     console.error('Error fetching settings:', error);
