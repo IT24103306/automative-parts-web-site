@@ -12,34 +12,16 @@ const askPassword = (query: string): Promise<string> => {
       output: process.stdout,
     });
 
-    process.stdout.write(query);
-
-    // Hide typing
-    let password = '';
-    process.stdin.on('data', (char) => {
-      char = char.toString();
-      switch (char) {
-        case '\n':
-        case '\r':
-        case '\u0004':
-          process.stdin.pause();
-          break;
-        case '\u0008': // Backspace
-        case '\x7f': // Delete
-          password = password.slice(0, -1);
-          break;
-        case '\u0003': // Ctrl+C
-          process.exit(1);
-          break;
-        default:
-          password += char;
-          break;
+    // Intercept stdout to prevent echoing characters (except for the prompt and newlines)
+    (rl as any)._writeToOutput = function _writeToOutput(stringToWrite: string) {
+      if (stringToWrite.includes(query) || stringToWrite === '\r\n' || stringToWrite === '\n') {
+        process.stdout.write(stringToWrite);
+      } else {
+        process.stdout.write('*'); // mask with asterisk
       }
-    });
+    };
 
-    rl.question('', () => {
-      process.stdin.removeAllListeners('data');
-      console.log('\n');
+    rl.question(query, (password) => {
       rl.close();
       resolve(password.trim());
     });
