@@ -136,6 +136,16 @@ export default function StoreLayout() {
                   {link.name}
                 </Link>
               ))}
+              <Link
+                to="/admin/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className={clsx(
+                  'border-t border-neutral-800 pt-6 text-lg transition-colors',
+                  location.pathname.startsWith('/admin') ? 'text-primary' : 'text-neutral-300 hover:text-primary'
+                )}
+              >
+                Admin Login
+              </Link>
             </nav>
           </motion.div>
         )}
