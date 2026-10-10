@@ -39,9 +39,9 @@ export default function AdminLayout() {
         mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="flex items-center justify-between h-16 px-6 border-b border-neutral-900">
-          <span className="text-xl font-bold tracking-tight text-white">
-            <span className="text-primary mr-2">NG</span>Admin
-          </span>
+          <Link to="/admin" className="flex items-center">
+            <img src="/images/ng-motors-logo.png" alt="NG Motors Admin" className="h-8 w-auto object-contain" />
+          </Link>
           <button className="md:hidden text-neutral-400 hover:text-white" onClick={() => setMobileMenuOpen(false)}>
             <X className="h-6 w-6" />
           </button>
@@ -98,9 +98,9 @@ export default function AdminLayout() {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Mobile Header */}
         <header className="md:hidden flex items-center justify-between h-16 px-4 border-b border-neutral-900 bg-neutral-950">
-          <span className="text-lg font-bold text-white">
-            <span className="text-primary mr-2">NG</span>Admin
-          </span>
+          <Link to="/admin" className="flex items-center">
+            <img src="/images/ng-motors-logo.png" alt="NG Motors Admin" className="h-8 w-auto object-contain" />
+          </Link>
           <button 
             onClick={() => setMobileMenuOpen(true)}
             className="text-neutral-400 hover:text-white"

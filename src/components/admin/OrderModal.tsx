@@ -152,7 +152,7 @@ export default function OrderModal({ orderId, onClose, onStatusUpdated }: OrderM
                   <div className="flex justify-between items-start mb-4">
                     <h4 className="text-sm font-bold text-primary uppercase tracking-wider">Customer Details</h4>
                     <div className="flex gap-2">
-                      <a href={`tel:${order.customer?.phone?.replace(/\D/g, '')}`} className="p-1.5 bg-neutral-900 hover:bg-neutral-800 text-neutral-400 rounded-sm transition-colors" title="Call Customer">
+                      <a href={`tel:+${order.customer?.phone?.replace(/\D/g, '')}`} className="p-1.5 bg-neutral-900 hover:bg-neutral-800 text-neutral-400 rounded-sm transition-colors" title="Call Customer">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
                       </a>
                       <a href={`https://wa.me/${order.customer?.phone?.replace(/\D/g, '')}?text=${encodeURIComponent(`Hello ${order.customer?.name || 'Customer'}, this is NG Motors.`)}`} target="_blank" rel="noreferrer" className="p-1.5 bg-green-900/20 hover:bg-green-900/40 text-green-500 rounded-sm transition-colors" title="WhatsApp Customer">

@@ -24,7 +24,7 @@ export default function Contact() {
   
   const handleCall = () => {
     const number = settings?.phone?.replace(/\D/g, '') || '';
-    window.location.href = `tel:${number}`;
+    window.location.href = `tel:+${number}`;
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

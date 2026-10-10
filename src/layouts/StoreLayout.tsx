@@ -41,13 +41,7 @@ export default function StoreLayout() {
           <div className="flex justify-between items-center">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-3 md:space-x-4 group">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-primary flex items-center justify-center rounded-sm skew-x-[-12deg] border border-red-500/50 shadow-[0_0_20px_rgba(255,0,0,0.4)] group-hover:shadow-[0_0_35px_rgba(255,0,0,0.8)] transition-all duration-500">
-                <span className="text-white font-heading font-black italic text-xl md:text-2xl skew-x-[12deg]">NG</span>
-              </div>
-              <span className="text-xl md:text-2xl font-heading font-black tracking-[0.15em] text-white uppercase flex flex-col leading-none">
-                <span>MOTORS</span>
-                <span className="text-[9px] text-neutral-400 tracking-[0.3em] font-sans mt-1">(PVT) LTD</span>
-              </span>
+              <img src="/images/ng-motors-logo.png" alt="NG Motors" className="h-10 md:h-12 w-auto object-contain transition-transform duration-500 group-hover:scale-105" />
             </Link>
 
             {/* Desktop Nav */}
@@ -73,7 +67,7 @@ export default function StoreLayout() {
             {/* Actions */}
             <div className="flex items-center space-x-4 md:space-x-6">
               <a 
-                href={settings?.phone ? `tel:${settings.phone.replace(/\D/g, '')}` : '#'}
+                href={settings?.phone ? `tel:+${settings.phone.replace(/\D/g, '')}` : '#'}
                 onClick={(e) => { if (!settings?.phone) { e.preventDefault(); alert('Phone contact is currently unavailable.'); } }}
                 className="hidden md:flex items-center text-white hover:text-primary transition-colors"
                 title="Call Owner"
@@ -201,7 +195,7 @@ export default function StoreLayout() {
       {/* Mobile Sticky Action Bar */}
       <div className="md:hidden fixed bottom-0 left-0 w-full z-50 bg-black/95 backdrop-blur-xl border-t border-neutral-900 px-4 py-3 flex justify-between items-center shadow-[0_-10px_40px_rgba(0,0,0,0.8)]">
         <a 
-          href={settings?.phone ? `tel:${settings.phone.replace(/\D/g, '')}` : '#'}
+          href={settings?.phone ? `tel:+${settings.phone.replace(/\D/g, '')}` : '#'}
           onClick={(e) => { if (!settings?.phone) { e.preventDefault(); alert('Phone contact is currently unavailable.'); } }}
           className="flex-1 flex flex-col items-center justify-center text-neutral-400 hover:text-white transition-colors border-r border-neutral-800"
         >

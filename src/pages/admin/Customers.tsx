@@ -137,7 +137,7 @@ export default function Customers() {
                     <td className="py-4 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <a 
-                          href={`tel:${customer.phone}`}
+                          href={`tel:+${customer.phone.replace(/\D/g, '')}`}
                           className="p-2 bg-neutral-900 hover:bg-neutral-800 text-neutral-300 rounded transition-colors"
                           title="Call Customer"
                         >

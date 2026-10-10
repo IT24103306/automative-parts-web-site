@@ -2,52 +2,55 @@ import { useRef, useEffect, useState, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Environment, Float, ContactShadows, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import React from 'react';
 
 // This is the architecture ready for the real automotive car GLB
 // The client will upload the file to /assets/3d/automotive/exploded-car.glb
+const CarModelInner = () => {
+  const { scene } = useGLTF('/assets/3d/automotive/exploded-car.glb');
+  return <primitive object={scene} scale={1.2} position={[0, -1, 0]} />;
+};
+
+class CarErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean}> {
+  constructor(props: {children: React.ReactNode}) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <mesh>
+          <boxGeometry args={[0,0,0]} />
+          <meshBasicMaterial color="black" />
+        </mesh>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const CarModel = () => {
   const group = useRef<THREE.Group>(null);
   
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
     if (group.current) {
-      // Slow rotation
       group.current.rotation.y = t * 0.05;
-
-      // Scroll-driven animation logic (0% to 100%)
-      // This maps to the user's requested timeline:
-      // 35%: Initial separation
-      // 50%: Major components moving
-      // 65%: Engine, transmission, suspension
-      // 80%: Full exploded configuration
-      
-      // const explodeProgress = Math.max(0, (scrollProgress - 0.35) * 2); 
-      // explodeProgress goes 0 -> 1 between 35% and 85% scroll
-
-      // Example of how the real model nodes would be manipulated:
-      /*
-      if (nodes.Engine) nodes.Engine.position.z = explodeProgress * 2;
-      if (nodes.Wheels_Front) nodes.Wheels_Front.position.x = -explodeProgress * 3;
-      if (nodes.Wheels_Rear) nodes.Wheels_Rear.position.x = explodeProgress * 3;
-      if (nodes.Body) nodes.Body.position.y = explodeProgress * 2;
-      */
     }
   });
 
-  try {
-    const { scene } = useGLTF('/assets/3d/automotive/exploded-car.glb');
-    return <primitive object={scene} ref={group} scale={1.2} position={[0, -1, 0]} />;
-  } catch (error) {
-    // Fallback if the asset is missing
-    return (
-      <group ref={group}>
-        <mesh>
-          <boxGeometry args={[0,0,0]} />
-          <meshBasicMaterial color="black" />
-        </mesh>
-      </group>
-    );
-  }
+  return (
+    <group ref={group}>
+      <CarErrorBoundary>
+        <Suspense fallback={null}>
+          <CarModelInner />
+        </Suspense>
+      </CarErrorBoundary>
+    </group>
+  );
 };
 
 const CameraRig = ({ scrollProgress }: { scrollProgress: number }) => {
