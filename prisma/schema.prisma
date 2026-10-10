@@ -14,6 +14,8 @@ model Admin {
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("admin")
 }
 
 model Category {
@@ -26,6 +28,8 @@ model Category {
   products    Product[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  @@map("category")
 }
 
 model Product {
@@ -54,6 +58,8 @@ model Product {
   orderItems        OrderItem[]
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
+
+  @@map("product")
 }
 
 model ProductImage {
@@ -64,6 +70,8 @@ model ProductImage {
   isPrimary Boolean  @default(false)
   order     Int      @default(0)
   createdAt DateTime @default(now())
+
+  @@map("productimage")
 }
 
 model Customer {
@@ -76,6 +84,8 @@ model Customer {
   notes     String?  @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("customer")
 }
 
 model Order {
@@ -96,6 +106,8 @@ model Order {
   statusHistory  OrderStatusHistory[]
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
+
+  @@map("order")
 }
 
 model OrderItem {
@@ -105,6 +117,8 @@ model OrderItem {
   productId String
   product   Product @relation(fields: [productId], references: [id])
   quantity  Int
+
+  @@map("orderitem")
 }
 
 model OrderStatusHistory {
@@ -114,6 +128,8 @@ model OrderStatusHistory {
   status    OrderStatus
   notes     String?
   createdAt DateTime    @default(now())
+
+  @@map("orderstatushistory")
 }
 
 model SiteSettings {
@@ -137,6 +153,8 @@ model SiteSettings {
   seoSettings         Json?
   footerContent       String?  @db.Text
   updatedAt           DateTime @updatedAt
+
+  @@map("sitesettings")
 }
 
 model PreBooking {
@@ -157,6 +175,8 @@ model PreBooking {
   imageUrl        String?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+
+  @@map("prebooking")
 }
 
 model CustomerEnquiry {
@@ -168,6 +188,8 @@ model CustomerEnquiry {
   vehicle       String
   message       String?  @db.Text
   createdAt     DateTime @default(now())
+
+  @@map("customerenquiry")
 }
 
 enum Availability {
