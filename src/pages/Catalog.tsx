@@ -223,7 +223,7 @@ export default function Catalog() {
                               alert('WhatsApp contact is currently unavailable. Please call us directly.');
                               return;
                             }
-                            const message = `Hi ${settings?.companyName || 'NG Motors'}, I would like to enquire about:\\n\\nPart: ${product.name}\\nPart Number: ${product.partNumber}\\nBrand: ${product.brand || 'Not specified'}`;
+                            const message = `Hi ${settings?.companyName || 'NG Motors'}, I would like to enquire about:\n\nPart: ${product.name}\nPart Number: ${product.partNumber}\nBrand: ${product.brand || 'Not specified'}`;
                             window.open(`https://wa.me/${number}?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
                           }}
                           className="w-full py-2 text-center bg-transparent border border-green-600 text-green-500 text-[9px] font-bold uppercase tracking-widest hover:bg-green-600 hover:text-white transition-colors"
