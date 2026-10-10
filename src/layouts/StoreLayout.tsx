@@ -140,8 +140,8 @@ export default function StoreLayout() {
                 to="/admin/login"
                 onClick={() => setMobileMenuOpen(false)}
                 className={clsx(
-                  'border-t border-neutral-800 pt-6 text-lg transition-colors',
-                  location.pathname.startsWith('/admin') ? 'text-primary' : 'text-neutral-300 hover:text-primary'
+                  'transition-colors mt-4 text-lg border-t border-neutral-800 pt-6',
+                  location.pathname === '/admin/login' ? 'text-primary' : 'text-neutral-400 hover:text-primary'
                 )}
               >
                 Admin Login
