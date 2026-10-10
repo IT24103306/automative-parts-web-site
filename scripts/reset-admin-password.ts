@@ -52,16 +52,36 @@ async function main() {
   // Database verification
   const dbUrl = process.env.DATABASE_URL || '';
   console.log(`\n--- Environment Check ---`);
-  console.log(`Target Database Host: ${dbUrl.split('@').pop()?.split('/')[0] || 'Unknown'}`);
   
-  const isProduction = dbUrl.includes('aivencloud.com') || dbUrl.includes('aiven');
-  
-  if (!isProduction) {
-    console.warn(`\nWARNING: The current DATABASE_URL appears to be LOCAL (not Aiven production).`);
-    console.warn(`If you intend to reset the production password, you must set the DATABASE_URL to your Aiven MySQL connection string first.`);
-  } else {
-    console.log(`\nSUCCESS: Verified connection targeting production Aiven database.`);
+  if (!dbUrl) {
+    console.error('Error: DATABASE_URL is not set.');
+    process.exit(1);
   }
+
+  let parsedUrl: URL;
+  try {
+    parsedUrl = new URL(dbUrl);
+  } catch (err) {
+    console.error('Error: DATABASE_URL is not a valid URL.');
+    console.error('If your password contains special characters like #, ?, or @, they must be URL-encoded (e.g., %40 for @, %23 for #).');
+    console.error('Also ensure you do not have accidental duplicates like "mysql://mysql://".');
+    process.exit(1);
+  }
+
+  const host = parsedUrl.hostname;
+  console.log(`Target Database Host: ${host}`);
+  
+  const expectedProductionHost = 'mysql-1b89c581-thuvarakanthuva73-29e9.g.aivencloud.com';
+  
+  if (host !== expectedProductionHost) {
+    console.error(`\nERROR: Hostname mismatch!`);
+    console.error(`Expected: ${expectedProductionHost}`);
+    console.error(`Actual:   ${host}`);
+    console.error(`\nStopping. This script is strictly locked to the production database to prevent accidental local data modification.`);
+    process.exit(1);
+  }
+
+  console.log(`\nSUCCESS: Verified strict connection to the exact production Aiven database.`);
 
   const proceed = await askConfirm('\nDo you want to proceed with this database? (y/N): ');
   if (!proceed) {
