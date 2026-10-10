@@ -30,7 +30,18 @@ export default function Login() {
       const from = location.state?.from?.pathname || '/admin';
       navigate(from, { replace: true });
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to login. Please try again.');
+      // Give the user a useful message when the production API cannot be reached.
+      if (err.response?.data?.error) {
+        setError(err.response.data.error);
+      } else if (err.response?.status === 404) {
+        setError('Login API endpoint was not found. Please contact the site administrator.');
+      } else if (err.response?.status >= 500) {
+        setError('The server is temporarily unavailable. Please try again shortly.');
+      } else if (err.code === 'ERR_NETWORK' || !err.response) {
+        setError('Cannot connect to the login server. Check your connection and try again.');
+      } else {
+        setError('Failed to login. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
