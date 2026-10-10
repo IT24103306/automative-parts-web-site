@@ -125,7 +125,7 @@ export default function OrderModal({ orderId, onClose, onStatusUpdated }: OrderM
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
         <div className="fixed inset-0 transition-opacity bg-black/80 backdrop-blur-sm" onClick={onClose} />
         
-        <div className="relative inline-block w-full max-w-4xl p-6 overflow-hidden text-left align-middle transition-all transform bg-neutral-950 border border-neutral-800 shadow-xl rounded-2xl">
+        <div className="relative inline-block w-full max-w-4xl p-4 sm:p-6 overflow-hidden text-left align-middle transition-all transform bg-neutral-950 border border-neutral-800 shadow-xl rounded-2xl">
           <div className="flex items-center justify-between mb-5 border-b border-neutral-900 pb-4">
             <div>
               <h3 className="text-xl font-bold text-white flex items-center">
@@ -232,9 +232,9 @@ export default function OrderModal({ orderId, onClose, onStatusUpdated }: OrderM
                     {order.items.map((item: any) => (
                       <div key={item.id} className="flex items-center p-3 border border-neutral-800 rounded-sm bg-neutral-950/50">
                         <div className="w-12 h-12 bg-neutral-900 rounded-sm mr-4 flex-shrink-0" />
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-white">{item.product.name}</p>
-                          <p className="text-xs font-mono text-neutral-500">PN: {item.product.partNumber} • SKU: {item.product.SKU}</p>
+                        <div className="flex-1 min-w-0 pr-2">
+                          <p className="text-sm font-medium text-white truncate">{item.product.name}</p>
+                          <p className="text-xs font-mono text-neutral-500 truncate">PN: {item.product.partNumber} • SKU: {item.product.SKU}</p>
                         </div>
                         <div className="text-right pl-4 border-l border-neutral-800">
                           <p className="text-xs text-neutral-500 uppercase">Qty</p>

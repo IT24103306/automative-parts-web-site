@@ -72,7 +72,7 @@ export default function ProductDetails() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           {/* Visual Side */}
           <div className="space-y-6">
-            <div className="aspect-square bg-[#0a0a0a] metallic-panel rounded-sm flex items-center justify-center p-8 relative overflow-hidden group">
+            <div className="aspect-square bg-[#0a0a0a] metallic-panel rounded-sm flex items-center justify-center p-4 sm:p-8 relative overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-tr from-black to-transparent z-0" />
               {/* Product Image */}
               <div className="w-[85%] h-[85%] rounded-md relative z-10 flex flex-col items-center justify-center overflow-hidden transition-transform duration-500 group-hover:scale-105">
@@ -126,7 +126,7 @@ export default function ProductDetails() {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-[#0a0a0a] to-black border border-neutral-800 p-6 sm:p-8 rounded-sm mb-8 shadow-xl">
+            <div className="bg-gradient-to-br from-[#0a0a0a] to-black border border-neutral-800 p-4 sm:p-8 rounded-sm mb-8 shadow-xl">
               <div className="flex items-center justify-between mb-6 border-b border-neutral-900 pb-6">
                 <div>
                   <p className="text-[10px] text-neutral-500 uppercase tracking-[0.2em] font-bold mb-1">Current Price</p>

@@ -34,7 +34,7 @@ export default function Cart() {
           <div className="flex-1 space-y-4">
             {items.map((item) => (
               <div key={item.product.id} className="metallic-panel rounded-sm p-4 sm:p-6 flex flex-col sm:flex-row items-center gap-6 group hover:metallic-border transition-all">
-                <div className="w-24 h-24 bg-[#0a0a0a] rounded-sm flex-shrink-0 flex items-center justify-center overflow-hidden relative border border-neutral-900">
+                <div className="w-16 h-16 sm:w-24 sm:h-24 bg-[#0a0a0a] rounded-sm flex-shrink-0 flex items-center justify-center overflow-hidden relative border border-neutral-900">
                   <div className="absolute inset-0 bg-gradient-to-tr from-black to-transparent z-0" />
                   {item.product.images && item.product.images.length > 0 ? (
                     <AutomotiveImage 

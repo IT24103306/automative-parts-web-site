@@ -103,7 +103,7 @@ export default function Catalog() {
         <div className="flex flex-col lg:flex-row gap-10">
           {/* Sidebar Filters */}
           <div className="w-full lg:w-64 flex-shrink-0">
-            <div className="bg-[#0a0a0a] border border-neutral-900 rounded-sm p-6 sticky top-28 shadow-xl">
+            <div className="bg-[#0a0a0a] border border-neutral-900 rounded-sm p-6 lg:sticky lg:top-28 shadow-xl">
               <div className="flex items-center space-x-2 mb-6 border-b border-neutral-800 pb-4">
                 <Filter className="h-5 w-5 text-primary" />
                 <h3 className="text-lg font-black text-white uppercase tracking-wider">Filters</h3>

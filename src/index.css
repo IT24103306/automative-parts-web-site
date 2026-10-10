@@ -74,7 +74,7 @@
   
   /* TYPOGRAPHY */
   .vibrant-heading {
-    @apply font-heading font-black tracking-tight drop-shadow-lg text-white;
+    @apply font-heading font-black tracking-tight drop-shadow-lg text-white text-balance;
   }
 
   /* PREMIUM CARDS */
@@ -87,14 +87,14 @@
 
   /* BUTTONS */
   .btn-primary {
-    @apply bg-gradient-to-b from-[#ff0000] to-[#c80000] text-white font-bold uppercase tracking-[0.2em] px-8 py-4 shadow-[0_0_15px_rgba(255,0,0,0.4)] transition-all duration-300;
+    @apply bg-gradient-to-b from-[#ff0000] to-[#c80000] text-white font-bold uppercase tracking-[0.2em] px-6 py-3 md:px-8 md:py-4 shadow-[0_0_15px_rgba(255,0,0,0.4)] transition-all duration-300;
   }
   .btn-primary:hover {
     @apply from-[#ff1a1a] to-[#e60000] shadow-[0_0_25px_rgba(255,0,0,0.6)];
   }
   
   .btn-secondary {
-    @apply bg-[#0a0a0a] border border-[#8e8e8e]/50 text-white font-bold uppercase tracking-[0.2em] px-8 py-4 transition-all duration-300;
+    @apply bg-[#0a0a0a] border border-[#8e8e8e]/50 text-white font-bold uppercase tracking-[0.2em] px-6 py-3 md:px-8 md:py-4 transition-all duration-300;
   }
   .btn-secondary:hover {
     @apply border-[#cfcfcf] shadow-[0_0_15px_rgba(255,0,0,0.2)] text-[#ff1a1a];

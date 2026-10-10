@@ -79,7 +79,7 @@ const HeroVideo = () => {
             </h2>
           </div>
           
-          <h1 className="text-5xl sm:text-6xl lg:text-[5.5rem] vibrant-heading leading-[0.85] mb-8">
+          <h1 className="text-3xl sm:text-5xl lg:text-[5.5rem] vibrant-heading leading-[0.85] mb-8">
             <span className="text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.2)]">ENGINEERED</span> <br />
             <span className="silver-text-gradient">FOR EVERY</span><br />
             <span className="text-white relative inline-block">

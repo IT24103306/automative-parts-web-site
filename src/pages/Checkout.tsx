@@ -168,7 +168,7 @@ export default function Checkout() {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Contact Info */}
-          <div className="metallic-panel border border-neutral-900 rounded-sm p-6 sm:p-10 relative overflow-hidden">
+          <div className="metallic-panel border border-neutral-900 rounded-sm p-4 sm:p-10 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] pointer-events-none" />
             <h3 className="text-xl font-black text-white uppercase tracking-wider mb-8 flex items-center relative z-10">
               <span className="w-8 h-8 rounded-full bg-neutral-900 flex items-center justify-center mr-3 text-sm text-neutral-400">01</span>
@@ -191,7 +191,7 @@ export default function Checkout() {
           </div>
 
           {/* Delivery Info */}
-          <div className="metallic-panel border border-neutral-900 rounded-sm p-6 sm:p-10 relative overflow-hidden">
+          <div className="metallic-panel border border-neutral-900 rounded-sm p-4 sm:p-10 relative overflow-hidden">
             <h3 className="text-xl font-black text-white uppercase tracking-wider mb-8 flex items-center relative z-10">
               <span className="w-8 h-8 rounded-full bg-neutral-900 flex items-center justify-center mr-3 text-sm text-neutral-400">02</span>
               Delivery Details
@@ -213,7 +213,7 @@ export default function Checkout() {
           </div>
 
           {/* Payment Preference */}
-          <div className="metallic-panel border border-neutral-900 rounded-sm p-6 sm:p-10 relative overflow-hidden">
+          <div className="metallic-panel border border-neutral-900 rounded-sm p-4 sm:p-10 relative overflow-hidden">
             <h3 className="text-xl font-black text-white uppercase tracking-wider mb-8 flex items-center relative z-10">
               <span className="w-8 h-8 rounded-full bg-neutral-900 flex items-center justify-center mr-3 text-sm text-neutral-400">03</span>
               Payment Preference

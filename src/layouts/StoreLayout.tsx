@@ -40,11 +40,11 @@ export default function StoreLayout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             {/* Logo */}
-            <Link to="/" className="flex items-center space-x-4 group">
-              <div className="w-12 h-12 bg-primary flex items-center justify-center rounded-sm skew-x-[-12deg] border border-red-500/50 shadow-[0_0_20px_rgba(255,0,0,0.4)] group-hover:shadow-[0_0_35px_rgba(255,0,0,0.8)] transition-all duration-500">
-                <span className="text-white font-heading font-black italic text-2xl skew-x-[12deg]">NG</span>
+            <Link to="/" className="flex items-center space-x-3 md:space-x-4 group">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-primary flex items-center justify-center rounded-sm skew-x-[-12deg] border border-red-500/50 shadow-[0_0_20px_rgba(255,0,0,0.4)] group-hover:shadow-[0_0_35px_rgba(255,0,0,0.8)] transition-all duration-500">
+                <span className="text-white font-heading font-black italic text-xl md:text-2xl skew-x-[12deg]">NG</span>
               </div>
-              <span className="text-2xl font-heading font-black tracking-[0.15em] text-white uppercase flex flex-col leading-none">
+              <span className="text-xl md:text-2xl font-heading font-black tracking-[0.15em] text-white uppercase flex flex-col leading-none">
                 <span>MOTORS</span>
                 <span className="text-[9px] text-neutral-400 tracking-[0.3em] font-sans mt-1">(PVT) LTD</span>
               </span>
@@ -71,7 +71,7 @@ export default function StoreLayout() {
             </nav>
 
             {/* Actions */}
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-4 md:space-x-6">
               <a 
                 href={settings?.phone ? `tel:${settings.phone.replace(/\D/g, '')}` : '#'}
                 onClick={(e) => { if (!settings?.phone) { e.preventDefault(); alert('Phone contact is currently unavailable.'); } }}

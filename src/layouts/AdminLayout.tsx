@@ -1,11 +1,13 @@
 import { Navigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { useAdminAuth } from '../hooks/useAdminAuth';
-import { LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Settings, LogOut, Calendar } from 'lucide-react';
+import { LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Settings, LogOut, Calendar, Menu, X } from 'lucide-react';
 import clsx from 'clsx';
+import { useState } from 'react';
 
 export default function AdminLayout() {
   const { token, logout, admin } = useAdminAuth();
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   if (!token) {
     return <Navigate to="/admin/login" state={{ from: location }} replace />;
@@ -23,12 +25,26 @@ export default function AdminLayout() {
 
   return (
     <div className="flex h-screen bg-black text-white">
+      {/* Mobile Sidebar Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <div className="w-64 flex-shrink-0 bg-neutral-950 border-r border-neutral-900 flex flex-col">
-        <div className="flex items-center h-16 px-6 border-b border-neutral-900">
+      <div className={clsx(
+        "fixed inset-y-0 left-0 z-50 w-64 flex-shrink-0 bg-neutral-950 border-r border-neutral-900 flex flex-col transform transition-transform duration-300 md:relative md:translate-x-0",
+        mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
+        <div className="flex items-center justify-between h-16 px-6 border-b border-neutral-900">
           <span className="text-xl font-bold tracking-tight text-white">
             <span className="text-primary mr-2">NG</span>Admin
           </span>
+          <button className="md:hidden text-neutral-400 hover:text-white" onClick={() => setMobileMenuOpen(false)}>
+            <X className="h-6 w-6" />
+          </button>
         </div>
         <div className="flex-1 overflow-y-auto py-4">
           <nav className="px-3 space-y-1">
@@ -40,6 +56,7 @@ export default function AdminLayout() {
                 <Link
                   key={item.name}
                   to={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
                   className={clsx(
                     isActive ? 'bg-neutral-900 text-white' : 'text-neutral-400 hover:bg-neutral-900/50 hover:text-white',
                     'group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors'
@@ -79,7 +96,20 @@ export default function AdminLayout() {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <main className="flex-1 overflow-y-auto bg-black p-8">
+        {/* Mobile Header */}
+        <header className="md:hidden flex items-center justify-between h-16 px-4 border-b border-neutral-900 bg-neutral-950">
+          <span className="text-lg font-bold text-white">
+            <span className="text-primary mr-2">NG</span>Admin
+          </span>
+          <button 
+            onClick={() => setMobileMenuOpen(true)}
+            className="text-neutral-400 hover:text-white"
+          >
+            <Menu className="h-6 w-6" />
+          </button>
+        </header>
+        
+        <main className="flex-1 overflow-y-auto bg-black p-4 sm:p-8">
           <Outlet />
         </main>
       </div>
