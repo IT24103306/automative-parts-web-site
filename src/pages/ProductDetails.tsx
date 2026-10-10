@@ -6,6 +6,7 @@ import { useSettings } from '../hooks/useSettings';
 import { ShoppingCart, MessageCircle, ArrowLeft, CheckCircle2, AlertTriangle, ShieldCheck, Truck, X, Calendar } from 'lucide-react';
 import PreBookModal from '../components/PreBookModal';
 import AutomotiveImage from '../components/AutomotiveImage';
+import { toWhatsAppNumber } from '../utils/contact';
 
 export default function ProductDetails() {
   const { id } = useParams();
@@ -51,8 +52,7 @@ export default function ProductDetails() {
   const handleWhatsApp = () => {
     const text = `Hi ${settings?.companyName || 'NG Motors'}, I'm inquiring about the price and availability of:\n\nPart: ${product.name}\nPN: ${product.partNumber}\nBrand: ${product.brand}`;
     
-    // Remove non-numeric characters from the configured whatsapp number
-    const number = settings?.whatsapp?.replace(/\D/g, '') || '';
+    const number = toWhatsAppNumber(settings?.whatsapp);
     
     if (!number) {
       alert("WhatsApp contact is currently unavailable. Please call us directly.");
