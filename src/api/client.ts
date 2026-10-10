@@ -25,8 +25,17 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      useAdminAuth.getState().logout();
-      window.location.href = '/admin/login';
+      // A 401 from the login endpoint means the credentials may be incorrect.
+      // Do not redirect/reload the login page before Login.tsx can show its error.
+      const requestUrl = String(error.config?.url || '');
+      const isLoginRequest = /(^|\/)admin\/login(?:\?|$)/.test(requestUrl);
+
+      if (!isLoginRequest) {
+        useAdminAuth.getState().logout();
+        if (window.location.pathname !== '/admin/login') {
+          window.location.href = '/admin/login';
+        }
+      }
     }
     return Promise.reject(error);
   }
