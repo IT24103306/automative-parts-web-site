@@ -162,3 +162,42 @@ export const updateAdminCredentials = async (req: any, res: Response): Promise<v
   }
 };
 
+export const diagnoseAdmin = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { email } = req.query;
+    if (!email || typeof email !== 'string') {
+      res.status(400).json({ error: 'Email query parameter required' });
+      return;
+    }
+
+    const admin = await prisma.admin.findUnique({ where: { email: email.trim() } });
+    
+    if (!admin) {
+      // Look for a close match if exact match fails
+      const allAdmins = await prisma.admin.findMany();
+      const emails = allAdmins.map(a => `"${a.email}"`);
+      res.json({
+        exists: false,
+        message: `Admin not found. There are ${allAdmins.length} total admins. Emails present: ${emails.join(', ')}`
+      });
+      return;
+    }
+
+    // Don't return the hash itself, just analyze it
+    const hash = admin.password;
+    const isBcrypt = hash && hash.startsWith('$2a$') || hash.startsWith('$2b$') || hash.startsWith('$2y$');
+    const hashLength = hash ? hash.length : 0;
+
+    res.json({
+      exists: true,
+      email: admin.email, // show exact casing
+      hashFormatValid: isBcrypt,
+      hashLength: hashLength,
+      name: admin.name
+    });
+
+  } catch (error: any) {
+    res.status(500).json({ error: 'Diagnostic failed: ' + error.message });
+  }
+};
+

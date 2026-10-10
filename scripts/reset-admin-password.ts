@@ -1,19 +1,93 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import * as readline from 'readline';
 
 const prisma = new PrismaClient();
 
+// Utility for secure hidden password prompt
+const askPassword = (query: string): Promise<string> => {
+  return new Promise((resolve) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+
+    process.stdout.write(query);
+
+    // Hide typing
+    let password = '';
+    process.stdin.on('data', (char) => {
+      char = char.toString();
+      switch (char) {
+        case '\n':
+        case '\r':
+        case '\u0004':
+          process.stdin.pause();
+          break;
+        case '\u0008': // Backspace
+        case '\x7f': // Delete
+          password = password.slice(0, -1);
+          break;
+        case '\u0003': // Ctrl+C
+          process.exit(1);
+          break;
+        default:
+          password += char;
+          break;
+      }
+    });
+
+    rl.question('', () => {
+      process.stdin.removeAllListeners('data');
+      console.log('\n');
+      rl.close();
+      resolve(password.trim());
+    });
+  });
+};
+
+const askConfirm = (query: string): Promise<boolean> => {
+  return new Promise((resolve) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+    rl.question(query, (answer) => {
+      rl.close();
+      resolve(answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes');
+    });
+  });
+};
+
 async function main() {
-  const args = process.argv.slice(2);
+  const email = process.argv[2];
   
-  if (args.length !== 2) {
-    console.error('Usage: npx tsx scripts/reset-admin-password.ts <email> <new-password>');
+  if (!email) {
+    console.error('Usage: npx tsx scripts/reset-admin-password.ts <email>');
     process.exit(1);
   }
 
-  const [email, newPassword] = args;
+  // Database verification
+  const dbUrl = process.env.DATABASE_URL || '';
+  console.log(`\n--- Environment Check ---`);
+  console.log(`Target Database Host: ${dbUrl.split('@').pop()?.split('/')[0] || 'Unknown'}`);
+  
+  const isProduction = dbUrl.includes('aivencloud.com') || dbUrl.includes('aiven');
+  
+  if (!isProduction) {
+    console.warn(`\nWARNING: The current DATABASE_URL appears to be LOCAL (not Aiven production).`);
+    console.warn(`If you intend to reset the production password, you must set the DATABASE_URL to your Aiven MySQL connection string first.`);
+  } else {
+    console.log(`\nSUCCESS: Verified connection targeting production Aiven database.`);
+  }
 
-  console.log(`Looking up admin with email: ${email}`);
+  const proceed = await askConfirm('\nDo you want to proceed with this database? (y/N): ');
+  if (!proceed) {
+    console.log('Aborted.');
+    process.exit(0);
+  }
+
+  console.log(`\nLooking up admin with email: ${email}`);
   
   const admin = await prisma.admin.findUnique({
     where: { email }
@@ -21,9 +95,14 @@ async function main() {
 
   if (!admin) {
     console.error(`Error: Admin with email '${email}' not found.`);
-    console.error('Available admin accounts:');
-    const allAdmins = await prisma.admin.findMany({ select: { email: true } });
-    allAdmins.forEach(a => console.error(` - ${a.email}`));
+    process.exit(1);
+  }
+
+  const newPassword = await askPassword('Enter NEW password (input will be hidden): ');
+  const confirmPassword = await askPassword('Confirm NEW password: ');
+
+  if (newPassword !== confirmPassword) {
+    console.error('Error: Passwords do not match.');
     process.exit(1);
   }
 
@@ -42,7 +121,6 @@ async function main() {
   });
 
   console.log('\nSuccess! Password has been securely reset.');
-  console.log(`You can now log in at the production URL with the email: ${email}`);
 }
 
 main()
