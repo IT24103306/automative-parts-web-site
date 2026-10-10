@@ -4,6 +4,8 @@ import { useCart } from '../hooks/useCart';
 import { Link } from 'react-router-dom';
 import { Search, Filter, Loader2, SearchX } from 'lucide-react';
 import AutomotiveImage from '../components/AutomotiveImage';
+import { useSettings } from '../hooks/useSettings';
+import { toWhatsAppNumber } from '../utils/contact';
 
 const formatCompatibility = (comp: any): string => {
   if (!comp) return 'Universal Fit';
@@ -23,6 +25,7 @@ const formatCompatibility = (comp: any): string => {
 };
 export default function Catalog() {
   const { addItem } = useCart();
+  const { settings } = useSettings();
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -212,9 +215,21 @@ export default function Catalog() {
                             ADD TO CART
                           </button>
                         </div>
-                        <a href="#" className="w-full py-2 text-center bg-transparent border border-green-600 text-green-500 text-[9px] font-bold uppercase tracking-widest hover:bg-green-600 hover:text-white transition-colors">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const number = toWhatsAppNumber(settings?.whatsapp);
+                            if (!number) {
+                              alert('WhatsApp contact is currently unavailable. Please call us directly.');
+                              return;
+                            }
+                            const message = `Hi ${settings?.companyName || 'NG Motors'}, I would like to enquire about:\\n\\nPart: ${product.name}\\nPart Number: ${product.partNumber}\\nBrand: ${product.brand || 'Not specified'}`;
+                            window.open(`https://wa.me/${number}?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
+                          }}
+                          className="w-full py-2 text-center bg-transparent border border-green-600 text-green-500 text-[9px] font-bold uppercase tracking-widest hover:bg-green-600 hover:text-white transition-colors"
+                        >
                           WHATSAPP ENQUIRY
-                        </a>
+                        </button>
                       </div>
                     </div>
                   </div>
