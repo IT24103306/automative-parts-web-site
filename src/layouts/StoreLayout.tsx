@@ -42,7 +42,11 @@ export default function StoreLayout() {
           <div className="flex justify-between items-center">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-3 md:space-x-4 group">
-              <img src="/images/ng-motors-logo.png" alt="NG Motors" className="h-10 md:h-12 w-auto object-contain transition-transform duration-500 group-hover:scale-105" />
+              <img 
+                src="/images/8377636a-498a-4071-914c-86f5a28602a4.png" 
+                alt="NG Motors" 
+                className="h-10 sm:h-12 md:h-14 lg:h-16 w-auto object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] transition-transform duration-500 group-hover:scale-105" 
+              />
             </Link>
 
             {/* Desktop Nav */}
