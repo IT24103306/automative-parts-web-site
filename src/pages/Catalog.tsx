@@ -29,6 +29,7 @@ export default function Catalog() {
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   
   // Filters
   const [search, setSearch] = useState('');
@@ -49,6 +50,7 @@ export default function Catalog() {
 
   const fetchCatalog = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const query = new URLSearchParams();
       query.append('activeOnly', 'true');
@@ -64,10 +66,20 @@ export default function Catalog() {
         apiClient.get('/categories?activeOnly=true')
       ]);
       
-      setProducts(productsRes.data.data);
-      setCategories(categoriesRes.data);
-    } catch (error) {
+      const productData = productsRes.data?.data;
+      if (!Array.isArray(productData)) {
+        throw new Error('The products API returned an unexpected response. Check the production API URL and backend response.');
+      }
+      setProducts(productData);
+      setCategories(Array.isArray(categoriesRes.data) ? categoriesRes.data : []);
+    } catch (error: any) {
       console.error('Failed to load catalog', error);
+      const status = error?.response?.status;
+      const serverMessage = error?.response?.data?.error || error?.message;
+      setLoadError(status
+        ? `Products could not be loaded (HTTP ${status}). ${serverMessage || 'Check the backend service.'}`
+        : `Products could not be loaded. ${serverMessage || 'Check the backend connection and VITE_API_URL.'}`
+      );
     } finally {
       setLoading(false);
     }
@@ -140,6 +152,15 @@ export default function Catalog() {
             {loading ? (
               <div className="flex justify-center items-center h-64">
                 <Loader2 className="h-8 w-8 text-primary animate-spin" />
+              </div>
+            ) : loadError ? (
+              <div className="bg-[#0a0a0a] border border-red-900/60 p-10 text-center rounded-sm">
+                <SearchX className="w-14 h-14 text-red-500 mx-auto mb-5" />
+                <h3 className="text-xl font-black text-white mb-2 uppercase tracking-tight">Unable to Load Products</h3>
+                <p role="alert" className="text-red-300 max-w-2xl mx-auto break-words">{loadError}</p>
+                <button onClick={fetchCatalog} className="mt-6 px-6 py-3 bg-primary text-white font-bold uppercase tracking-widest text-xs hover:bg-red-700 transition-colors rounded-sm">
+                  Retry
+                </button>
               </div>
             ) : products.length === 0 ? (
               <div className="bg-[#0a0a0a] border border-neutral-900 p-16 text-center rounded-sm">
