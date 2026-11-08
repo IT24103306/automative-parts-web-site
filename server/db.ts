@@ -13,7 +13,8 @@ export const prisma =
     log: process.env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
   });
 
-if (process.env.NODE_ENV !== 'production') {
+// Always store on globalThis to prevent multiple connection pools across re-evaluations
+if (!globalThis.__globalPrismaClient) {
   globalThis.__globalPrismaClient = prisma;
 }
 

@@ -37,12 +37,10 @@ const resolveImageUrl = (src?: string): string => {
 
   // If it's a backend uploads path (/uploads/...), resolve to backend origin in production if needed
   if (trimmed.startsWith('/uploads/')) {
-    const apiUrl = import.meta.env.VITE_API_URL;
-    if (apiUrl && typeof apiUrl === 'string') {
-      const backendOrigin = apiUrl.trim().replace(/\/api\/?$/, '');
-      if (/^https?:\/\//i.test(backendOrigin)) {
-        return `${backendOrigin}${trimmed}`;
-      }
+    const apiUrl = (import.meta.env.VITE_API_URL as string | undefined) || 'https://automative-parts-web-site.onrender.com/api';
+    const backendOrigin = apiUrl.trim().replace(/\/api\/?$/, '');
+    if (/^https?:\/\//i.test(backendOrigin)) {
+      return `${backendOrigin}${trimmed}`;
     }
   }
 
