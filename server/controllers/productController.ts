@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
-import { PrismaClient, Availability } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { Availability } from '@prisma/client';
+import { prisma } from '../db';
 
 // Helper to determine availability based on stock, if not manually overridden
 const calculateAvailability = (stockQuantity: number, threshold: number, manualStatus?: string): Availability => {
@@ -73,7 +72,7 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
 // Public & Admin: Get single product
 export const getProductById = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const product = await prisma.product.findUnique({
       where: { id },
       include: {
@@ -149,7 +148,7 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
 // Admin: Update product
 export const updateProduct = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const data = req.body;
 
     const existingProduct = await prisma.product.findUnique({ where: { id } });
@@ -202,7 +201,7 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
 // Admin: Delete product
 export const deleteProduct = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     
     // Note: orderItems relation might restrict deletion if orders exist. 
     // Prisma setup has no cascade on OrderItem -> Product.

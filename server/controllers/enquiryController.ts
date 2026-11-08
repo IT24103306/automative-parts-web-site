@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
 import { Request, Response } from 'express';
-
-const prisma = new PrismaClient();
+import { prisma } from '../db';
 
 export const createEnquiry = async (req: Request, res: Response) => {
   try {
@@ -18,6 +16,7 @@ export const createEnquiry = async (req: Request, res: Response) => {
     });
     res.status(201).json(enquiry);
   } catch (error) {
+    console.error('Error creating customer enquiry:', error);
     res.status(500).json({ error: 'Failed to submit enquiry' });
   }
 };
@@ -29,6 +28,7 @@ export const getEnquiries = async (req: Request, res: Response) => {
     });
     res.json(enquiries);
   } catch (error) {
+    console.error('Error fetching customer enquiries:', error);
     res.status(500).json({ error: 'Failed to fetch enquiries' });
   }
 };

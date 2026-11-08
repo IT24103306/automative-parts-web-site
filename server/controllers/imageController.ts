@@ -1,9 +1,8 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { supabase } from '../services/supabase';
 import { v4 as uuidv4 } from 'uuid';
+import { prisma } from '../db';
 
-const prisma = new PrismaClient();
 const BUCKET_NAME = 'product-images';
 
 // Helper to sanitize file names
@@ -13,7 +12,7 @@ const sanitizeFileName = (fileName: string) => {
 
 export const uploadProductImage = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { productId } = req.params;
+    const productId = req.params.productId as string;
     const file = req.file;
 
     if (!file) {
@@ -80,7 +79,7 @@ export const uploadProductImage = async (req: Request, res: Response): Promise<v
 
 export const deleteProductImage = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     const image = await prisma.productImage.findUnique({ where: { id } });
     if (!image) {
@@ -132,7 +131,7 @@ export const deleteProductImage = async (req: Request, res: Response): Promise<v
 
 export const setPrimaryImage = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     
     const image = await prisma.productImage.findUnique({ where: { id } });
     if (!image) {

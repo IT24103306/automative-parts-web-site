@@ -1,7 +1,5 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../db';
 
 // Public & Admin: Get all categories
 export const getCategories = async (req: Request, res: Response): Promise<void> => {
@@ -24,7 +22,7 @@ export const getCategories = async (req: Request, res: Response): Promise<void> 
 // Public & Admin: Get single category
 export const getCategoryById = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const category = await prisma.category.findUnique({
       where: { id },
       include: {
@@ -74,7 +72,7 @@ export const createCategory = async (req: Request, res: Response): Promise<void>
 // Admin: Update category
 export const updateCategory = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { name, description, imageUrl, isActive, order } = req.body;
 
     const category = await prisma.category.update({
@@ -98,7 +96,7 @@ export const updateCategory = async (req: Request, res: Response): Promise<void>
 // Admin: Delete category
 export const deleteCategory = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     // Check if category has products
     const productCount = await prisma.product.count({ where: { categoryId: id } });

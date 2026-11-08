@@ -1,7 +1,5 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../db';
 
 // Public: Submit a new order enquiry
 export const submitOrder = async (req: Request, res: Response): Promise<void> => {
@@ -99,7 +97,7 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
 // Admin: Get order by ID
 export const getOrderById = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const order = await prisma.order.findUnique({
       where: { id },
       include: {
@@ -124,7 +122,7 @@ export const getOrderById = async (req: Request, res: Response): Promise<void> =
 // Admin: Update order status
 export const updateOrderStatus = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { status, paymentStatus, notes } = req.body;
 
     const validStatuses = ['PENDING', 'CONFIRMED', 'PAYMENT_PENDING', 'PAYMENT_VERIFICATION', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'COMPLETED', 'CANCELLED'];
@@ -164,7 +162,7 @@ export const updateOrderStatus = async (req: Request, res: Response): Promise<vo
 // Public: Get order by ID (restricted data)
 export const getPublicOrder = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const order = await prisma.order.findUnique({
       where: { id },
       include: {
@@ -189,7 +187,7 @@ export const getPublicOrder = async (req: Request, res: Response): Promise<void>
 // Public: Submit Payment Receipt
 export const submitPaymentReceipt = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { transactionRef } = req.body;
     const file = req.file;
 
@@ -260,7 +258,7 @@ export const submitPaymentReceipt = async (req: Request, res: Response): Promise
 // Admin: Get signed URL for receipt
 export const getOrderReceiptUrl = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const order = await prisma.order.findUnique({ where: { id } });
 
     if (!order || !order.receiptUrl) {
