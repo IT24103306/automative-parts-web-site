@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { apiClient } from '../api/client';
 import { useCart } from '../hooks/useCart';
 import { useSettings } from '../hooks/useSettings';
-import { ShoppingCart, MessageCircle, ArrowLeft, CheckCircle2, AlertTriangle, ShieldCheck, Truck, X, Calendar } from 'lucide-react';
+import { ShoppingCart, MessageCircle, ArrowLeft, CheckCircle2, AlertTriangle, ShieldCheck, Truck, X, Calendar, RefreshCw } from 'lucide-react';
 import PreBookModal from '../components/PreBookModal';
 import AutomotiveImage from '../components/AutomotiveImage';
 import { toWhatsAppNumber } from '../utils/contact';
@@ -15,22 +15,31 @@ export default function ProductDetails() {
   const { settings } = useSettings();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isPreBookOpen, setIsPreBookOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const response = await apiClient.get(`/products/${id}`);
-        setProduct(response.data);
-      } catch (error) {
-        console.error('Failed to load product', error);
-      } finally {
-        setLoading(false);
+  const fetchProduct = useCallback(async () => {
+    if (!id) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await apiClient.get(`/products/${id}`);
+      setProduct(response.data);
+    } catch (err: any) {
+      console.error('Failed to load product', err);
+      if (err.response?.status === 404) {
+        setError('Product not found in catalogue.');
+      } else {
+        setError(err.response?.data?.error || err.message || 'Unable to connect to product service.');
       }
-    };
-    
-    if (id) fetchProduct();
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
+
+  useEffect(() => {
+    fetchProduct();
+  }, [fetchProduct]);
 
   if (loading) {
     return (
@@ -40,11 +49,24 @@ export default function ProductDetails() {
     );
   }
 
-  if (!product) {
+  if (error || !product) {
     return (
-      <div className="min-h-screen bg-black pt-28 flex flex-col items-center">
-        <h2 className="text-2xl font-bold text-white mb-4">Product Not Found</h2>
-        <Link to="/products" className="text-primary hover:text-red-400">Return to Catalogue</Link>
+      <div className="min-h-screen bg-black pt-28 flex flex-col items-center justify-center p-6 text-center">
+        <AlertTriangle className="w-12 h-12 text-red-500 mb-4" />
+        <h2 className="text-2xl font-bold text-white mb-2">{error || 'Product Not Found'}</h2>
+        <p className="text-neutral-400 mb-6 text-sm">Please check your connection and try again.</p>
+        <div className="flex gap-4">
+          <button
+            onClick={() => fetchProduct()}
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary text-white text-xs font-bold uppercase tracking-widest rounded-sm hover:bg-red-700 transition-colors"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Retry
+          </button>
+          <Link to="/products" className="px-6 py-2.5 bg-neutral-900 border border-neutral-800 text-white text-xs font-bold uppercase tracking-widest rounded-sm hover:bg-neutral-800 transition-colors">
+            Return to Catalogue
+          </Link>
+        </div>
       </div>
     );
   }
