@@ -33,5 +33,7 @@ test-results/
 playwright-report/
 dummy.png
 dummy_receipt.png
+backups/
+*.pdf
 
 dist/
