@@ -1,6 +1,8 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors, { CorsOptions } from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
 import { prisma } from './db';
 
 import adminRoutes from './routes/adminRoutes';
@@ -24,18 +26,36 @@ const requiredEnvVars = [
 
 const missing = requiredEnvVars.filter((env) => !process.env[env]);
 if (missing.length > 0) {
-  console.error(`FATAL ERROR: Missing required environment variables: ${missing.join(', ')}`);
-  process.exit(1);
+  console.warn(`[Startup Warning] Missing environment variables: ${missing.join(', ')}. Some features may degrade gracefully.`);
 }
 
 const app = express();
 const port = process.env.PORT || 5000;
 
+// Ensure public/uploads directory exists for resilient local image fallback
+const uploadsDir = path.resolve(process.cwd(), 'public', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
 // ==========================================
-// CORS Configuration
+// Security Headers Middleware
+// ==========================================
+app.use((_req: Request, res: Response, next: NextFunction) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
+// ==========================================
+// Centralized Production CORS Configuration
 // ==========================================
 
 const defaultAllowedOrigins = [
+  'https://ingmotorparts.com.lk',
+  'https://www.ingmotorparts.com.lk',
   'https://ingmotoparts.com.lk',
   'https://www.ingmotoparts.com.lk',
   'http://localhost:5173',
@@ -97,8 +117,8 @@ export const isOriginAllowed = (origin: string): boolean => {
   if (/^https:\/\/[a-zA-Z0-9_-]+\.vercel\.app$/.test(normalized)) {
     return true;
   }
-  // Allow any subdomain of ingmotoparts.com.lk
-  if (/^https:\/\/([a-zA-Z0-9_-]+\.)?ingmotoparts\.com\.lk$/.test(normalized)) {
+  // Allow any subdomain of ingmotorparts.com.lk or ingmotoparts.com.lk
+  if (/^https:\/\/([a-zA-Z0-9_-]+\.)?ingmotor?parts\.com\.lk$/.test(normalized)) {
     return true;
   }
   return false;
@@ -113,7 +133,7 @@ const corsOptions: CorsOptions = {
     if (isOriginAllowed(origin)) {
       return callback(null, true);
     }
-    // Deny unauthorized origins without throwing 500 error
+    // Deny unauthorized origins safely without throwing unhandled 500 error
     return callback(null, false);
   },
   credentials: true,
@@ -134,11 +154,47 @@ app.use(cors(corsOptions));
 // Handle preflight explicitly (Express 5 compatible wildcard)
 app.options('/{0,}', cors(corsOptions));
 
-// 2. Body Parser
-app.use(express.json());
+// 2. Body Parser with 10MB request size limit
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// 3. Static serving for public images and local uploads
+app.use('/images', express.static(path.resolve(process.cwd(), 'public', 'images')));
+app.use('/uploads', express.static(uploadsDir));
 
 // ==========================================
-// Health & Diagnostics Endpoints
+// Lightweight Rate Limiter for Sensitive Routes
+// ==========================================
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const sensitiveRateLimiter = (limit: number, windowMs: number) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const ip = req.ip || req.socket.remoteAddress || 'unknown-ip';
+    const key = `${ip}-${req.baseUrl}`;
+    const now = Date.now();
+    const record = rateLimitMap.get(key);
+
+    if (!record || now > record.resetTime) {
+      rateLimitMap.set(key, { count: 1, resetTime: now + windowMs });
+      return next();
+    }
+
+    if (record.count >= limit) {
+      const origin = req.headers.origin as string | undefined;
+      if (origin && isOriginAllowed(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+      }
+      res.status(429).json({ error: 'Too many requests. Please try again later.' });
+      return;
+    }
+
+    record.count++;
+    next();
+  };
+};
+
+// ==========================================
+// Comprehensive Health & Diagnostics Endpoint
 // ==========================================
 
 const getSanitizedDbInfo = () => {
@@ -161,6 +217,8 @@ const getSanitizedDbInfo = () => {
   }
 };
 
+const startTime = Date.now();
+
 app.get('/api/health', async (_req: Request, res: Response) => {
   let dbStatus = 'connected';
   let dbError: string | null = null;
@@ -173,10 +231,19 @@ app.get('/api/health', async (_req: Request, res: Response) => {
   }
 
   const isHealthy = dbStatus === 'connected';
-  res.status(isHealthy ? 200 : 503).json({
+  const statusCode = isHealthy ? 200 : 503;
+
+  res.status(statusCode).json({
     status: isHealthy ? 'ok' : 'degraded',
-    message: isHealthy ? 'Automate Parts API is running' : 'Automate Parts API is running with database issues',
+    server: 'running',
+    version: '1.0.0',
+    build: process.env.RENDER_GIT_COMMIT || process.env.VERCEL_GIT_COMMIT_SHA || 'main-latest',
+    uptimeSeconds: Math.floor((Date.now() - startTime) / 1000),
+    environment: process.env.NODE_ENV || 'development',
     timestamp: new Date().toISOString(),
+    prisma: {
+      status: isHealthy ? 'ready' : 'error',
+    },
     database: {
       status: dbStatus,
       target: getSanitizedDbInfo(),
@@ -188,6 +255,11 @@ app.get('/api/health', async (_req: Request, res: Response) => {
 // ==========================================
 // Application API Routes
 // ==========================================
+
+// Apply rate limiter to auth endpoints (max 15 attempts per 5 minutes)
+app.use('/api/admin/login', sensitiveRateLimiter(15, 5 * 60 * 1000));
+// Apply rate limiter to order creation (max 20 submissions per 10 minutes)
+app.use('/api/orders', sensitiveRateLimiter(20, 10 * 60 * 1000));
 
 app.use('/api/admin', adminRoutes);
 app.use('/api/categories', categoryRoutes);

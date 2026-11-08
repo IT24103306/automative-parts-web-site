@@ -18,23 +18,41 @@ export interface SiteSettings {
   lowStockThreshold: number;
 }
 
+export const DEFAULT_SETTINGS: SiteSettings = {
+  companyName: 'NG Motors (Pvt) Ltd',
+  storeName: 'Automate Parts',
+  address: '57, Kurunegala Road, Galewela, Sri Lanka',
+  phone: '+94777561007',
+  whatsapp: '94777561007',
+  email: '',
+  codEnabled: true,
+  bankTransferEnabled: false,
+  lowStockThreshold: 5,
+};
+
 export function useSettings() {
-  const [settings, setSettings] = useState<SiteSettings | null>(null);
+  const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchSettings = async () => {
       try {
         const response = await apiClient.get('/settings');
-        setSettings(response.data);
+        if (isMounted && response.data) {
+          setSettings({ ...DEFAULT_SETTINGS, ...response.data });
+        }
       } catch (error) {
-        console.error('Failed to load site settings', error);
+        console.warn('[useSettings] Settings API unavailable, using fallback defaults:', error);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
     
     fetchSettings();
+    return () => { isMounted = false; };
   }, []);
 
   return { settings, loading };

@@ -45,8 +45,19 @@ export const getSettings = async (req: Request, res: Response): Promise<void> =>
 
     res.json(settings);
   } catch (error) {
-    console.error('Error fetching settings:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Error fetching settings, returning fallback defaults:', error);
+    // Graceful degradation: return default site settings so storefront remains operational
+    res.json({
+      companyName: 'NG Motors (Pvt) Ltd',
+      storeName: 'Automate Parts',
+      address: '57, Kurunegala Road, Galewela, Sri Lanka',
+      phone: '+94777561007',
+      whatsapp: '94777561007',
+      email: '',
+      codEnabled: true,
+      bankTransferEnabled: false,
+      lowStockThreshold: 5,
+    });
   }
 };
 

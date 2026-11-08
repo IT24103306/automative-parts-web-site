@@ -1,6 +1,6 @@
 import { useState } from 'react';
-
 import clsx from 'clsx';
+import { Package } from 'lucide-react';
 
 interface AutomotiveImageProps {
   src?: string;
@@ -10,11 +10,11 @@ interface AutomotiveImageProps {
 }
 
 const getCategoryFallbackImage = (category: string) => {
-  const cat = category.toLowerCase();
+  const cat = (category || 'general').toLowerCase();
   if (cat.includes('engine')) return '/images/timing_belt_1791466207397.jpg';
   if (cat.includes('brake')) return '/images/brake_disc_1791466289639.jpg';
   if (cat.includes('electrical') || cat.includes('lighting')) return '/images/spark_plug_1791466164055.jpg';
-  if (cat.includes('battery')) return '/images/spark_plug_1791466164055.jpg'; // We don't have battery image, fallback to spark plug or something
+  if (cat.includes('battery')) return '/images/spark_plug_1791466164055.jpg';
   if (cat.includes('cooling')) return '/images/timing_belt_1791466207397.jpg';
   if (cat.includes('fuel') || cat.includes('lubricant')) return '/images/fuel_injector_1791466246209.jpg';
   if (cat.includes('wheel') || cat.includes('bearing') || cat.includes('belt')) return '/images/wheel_bearing_1791466185338.jpg';
@@ -25,29 +25,58 @@ const getCategoryFallbackImage = (category: string) => {
   return '/images/wheel_bearing_1791466185338.jpg';
 };
 
+const resolveImageUrl = (src?: string): string => {
+  if (!src) return '';
+  const trimmed = src.trim();
+  if (!trimmed) return '';
+
+  // If already absolute URL (http/https), return as-is
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+
+  // If it's a backend uploads path (/uploads/...), resolve to backend origin in production if needed
+  if (trimmed.startsWith('/uploads/')) {
+    const apiUrl = import.meta.env.VITE_API_URL;
+    if (apiUrl && typeof apiUrl === 'string') {
+      const backendOrigin = apiUrl.trim().replace(/\/api\/?$/, '');
+      if (/^https?:\/\//i.test(backendOrigin)) {
+        return `${backendOrigin}${trimmed}`;
+      }
+    }
+  }
+
+  return trimmed;
+};
+
 export default function AutomotiveImage({ src, alt, category = 'General', className }: AutomotiveImageProps) {
-  const [error, setError] = useState(false);
+  const [errorStage, setErrorStage] = useState<'none' | 'primary-failed' | 'fallback-failed'>('none');
   const [loading, setLoading] = useState(true);
 
-  const handleError = () => {
-    setError(true);
-    setLoading(false);
-  };
+  const resolvedSrc = resolveImageUrl(src);
+  const fallbackSrc = getCategoryFallbackImage(category);
 
-  const handleLoad = () => {
-    setLoading(false);
-  };
+  // If both primary and fallback failed, render metallic SVG icon placeholder
+  if (errorStage === 'fallback-failed' || (!resolvedSrc && errorStage === 'primary-failed')) {
+    return (
+      <div className={clsx('relative overflow-hidden bg-[#0d0d0d] flex flex-col items-center justify-center p-4 border border-neutral-900', className)}>
+        <Package className="w-12 h-12 text-neutral-600 mb-2 stroke-[1.5]" />
+        <span className="text-[9px] font-mono font-bold text-neutral-500 uppercase tracking-widest text-center truncate max-w-full">
+          {category || 'Part Item'}
+        </span>
+      </div>
+    );
+  }
 
-  if (error || !src) {
+  // If primary image failed or was empty, attempt category fallback image
+  if (errorStage === 'primary-failed' || !resolvedSrc) {
     return (
       <div className={clsx('relative overflow-hidden bg-[#0a0a0a]', className)}>
         <img
-          src={getCategoryFallbackImage(category)}
-          alt={category + ' Fallback'}
-          className={clsx(
-            'w-full h-full object-contain',
-            className
-          )}
+          src={fallbackSrc}
+          alt={`${category} Fallback`}
+          onError={() => setErrorStage('fallback-failed')}
+          className={clsx('w-full h-full object-contain', className)}
         />
       </div>
     );
@@ -61,10 +90,13 @@ export default function AutomotiveImage({ src, alt, category = 'General', classN
         </div>
       )}
       <img
-        src={src}
+        src={resolvedSrc}
         alt={alt}
-        onError={handleError}
-        onLoad={handleLoad}
+        onError={() => {
+          setErrorStage('primary-failed');
+          setLoading(false);
+        }}
+        onLoad={() => setLoading(false)}
         className={clsx(
           'w-full h-full object-contain transition-opacity duration-300',
           loading ? 'opacity-0' : 'opacity-100',

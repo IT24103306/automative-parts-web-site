@@ -65,20 +65,28 @@ export default function Catalog() {
       query.append('page', page.toString());
       query.append('limit', '12');
 
-      const [productsRes, categoriesRes] = await Promise.all([
+      const [productsResult, categoriesResult] = await Promise.allSettled([
         apiClient.get(`/products?${query.toString()}`),
         apiClient.get('/categories?activeOnly=true')
       ]);
 
-      const productData = productsRes.data?.data;
-      setProducts(Array.isArray(productData) ? productData : []);
+      if (productsResult.status === 'fulfilled') {
+        const productData = productsResult.value.data?.data;
+        setProducts(Array.isArray(productData) ? productData : []);
 
-      if (productsRes.data?.pagination) {
-        setTotalPages(productsRes.data.pagination.totalPages || 1);
-        setTotalCount(productsRes.data.pagination.total || 0);
+        if (productsResult.value.data?.pagination) {
+          setTotalPages(productsResult.value.data.pagination.totalPages || 1);
+          setTotalCount(productsResult.value.data.pagination.total || 0);
+        }
+      } else {
+        throw productsResult.reason;
       }
 
-      setCategories(Array.isArray(categoriesRes.data) ? categoriesRes.data : []);
+      if (categoriesResult.status === 'fulfilled') {
+        setCategories(Array.isArray(categoriesResult.value.data) ? categoriesResult.value.data : []);
+      } else {
+        console.warn('Categories API failed independently, preserving existing categories:', categoriesResult.reason);
+      }
     } catch (err: any) {
       console.error('Failed to load catalog:', err);
       const message =

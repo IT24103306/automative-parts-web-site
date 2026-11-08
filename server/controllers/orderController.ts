@@ -202,28 +202,40 @@ export const submitPaymentReceipt = async (req: Request, res: Response): Promise
       return;
     }
     
-    const { supabase } = await import('../services/supabase');
     const { v4: uuidv4 } = await import('uuid');
+    const path = await import('path');
+    const fs = await import('fs');
     
     const sanitizeFileName = (fileName: string) => fileName.replace(/[^a-zA-Z0-9.\-_]/g, '').toLowerCase();
-    const fileName = `${id}/${uuidv4()}-${sanitizeFileName(file.originalname)}`;
-    
-    // Upload to private bucket 'payment-receipts'
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('payment-receipts')
-      .upload(fileName, file.buffer, {
-        contentType: file.mimetype,
-        upsert: false
-      });
+    const cleanFileName = sanitizeFileName(file.originalname);
+    const uniqueId = uuidv4();
+    const fileName = `${id}/${uniqueId}-${cleanFileName}`;
+    let receiptPath = '';
 
-    if (uploadError) {
-      console.error('Supabase upload error:', uploadError);
-      res.status(500).json({ error: 'Failed to upload receipt securely' });
-      return;
+    // Primary: Try Supabase private storage
+    try {
+      const { supabase } = await import('../services/supabase');
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('payment-receipts')
+        .upload(fileName, file.buffer, {
+          contentType: file.mimetype,
+          upsert: false
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+      receiptPath = uploadData.path;
+    } catch (storageErr) {
+      console.warn('[Receipt Upload] Supabase private upload failed. Storing locally:', storageErr);
+      const receiptDir = path.resolve(process.cwd(), 'public', 'uploads', 'receipts', id);
+      if (!fs.existsSync(receiptDir)) {
+        fs.mkdirSync(receiptDir, { recursive: true });
+      }
+      const localFilePath = path.join(receiptDir, `${uniqueId}-${cleanFileName}`);
+      fs.writeFileSync(localFilePath, file.buffer);
+      receiptPath = `local:/uploads/receipts/${id}/${uniqueId}-${cleanFileName}`;
     }
-
-    // We store the internal path, not a public URL since it's private
-    const receiptPath = uploadData.path;
 
     const updatedOrder = await prisma.$transaction(async (tx) => {
       const updated = await tx.order.update({
@@ -263,6 +275,13 @@ export const getOrderReceiptUrl = async (req: Request, res: Response): Promise<v
 
     if (!order || !order.receiptUrl) {
       res.status(404).json({ error: 'Receipt not found' });
+      return;
+    }
+
+    // Handle locally stored receipts
+    if (order.receiptUrl.startsWith('local:')) {
+      const localUrl = order.receiptUrl.replace('local:', '');
+      res.json({ url: localUrl });
       return;
     }
 

@@ -16,7 +16,7 @@ export default function Products() {
     setLoading(true);
     try {
       const [productsRes, categoriesRes] = await Promise.all([
-        apiClient.get('/products'),
+        apiClient.get('/products?limit=100'),
         apiClient.get('/categories')
       ]);
       setProducts(productsRes.data.data);

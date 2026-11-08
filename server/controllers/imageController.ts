@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { supabase } from '../services/supabase';
 import { v4 as uuidv4 } from 'uuid';
+import path from 'path';
+import fs from 'fs';
 import { prisma } from '../db';
 
 const BUCKET_NAME = 'product-images';
@@ -20,6 +22,19 @@ export const uploadProductImage = async (req: Request, res: Response): Promise<v
       return;
     }
 
+    // Validate MIME type
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'];
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+      res.status(400).json({ error: 'Invalid file format. Please upload JPG, PNG, WEBP, or GIF images only.' });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      res.status(400).json({ error: 'Image file size exceeds maximum limit of 5MB.' });
+      return;
+    }
+
     // Verify product exists
     const product = await prisma.product.findUnique({ where: { id: productId } });
     if (!product) {
@@ -27,33 +42,45 @@ export const uploadProductImage = async (req: Request, res: Response): Promise<v
       return;
     }
 
-    // Prepare file for upload
-    const fileExtension = file.originalname.split('.').pop();
-    const fileName = `${productId}/${uuidv4()}-${sanitizeFileName(file.originalname)}`;
+    const cleanName = sanitizeFileName(file.originalname);
+    const uniqueFileId = uuidv4();
+    const fileName = `${productId}/${uniqueFileId}-${cleanName}`;
 
-    // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from(BUCKET_NAME)
-      .upload(fileName, file.buffer, {
-        contentType: file.mimetype,
-        upsert: false
-      });
+    let publicUrl = '';
 
-    if (uploadError) {
-      console.error('Supabase upload error details:', uploadError);
-      res.status(500).json({ 
-        error: 'Failed to upload image to storage', 
-        details: uploadError.message || uploadError 
-      });
-      return;
+    // Primary: Try Supabase Storage if available
+    try {
+      const { error: uploadError } = await supabase.storage
+        .from(BUCKET_NAME)
+        .upload(fileName, file.buffer, {
+          contentType: file.mimetype,
+          upsert: false
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from(BUCKET_NAME)
+        .getPublicUrl(fileName);
+
+      publicUrl = publicUrlData.publicUrl;
+    } catch (storageErr) {
+      console.warn('[Image Storage] Supabase upload failed or unavailable. Falling back to local disk storage:', storageErr);
+      
+      // Fallback: Local file persistence in public/uploads/${productId}
+      const productUploadDir = path.resolve(process.cwd(), 'public', 'uploads', productId);
+      if (!fs.existsSync(productUploadDir)) {
+        fs.mkdirSync(productUploadDir, { recursive: true });
+      }
+
+      const localFileName = `${uniqueFileId}-${cleanName}`;
+      const localFilePath = path.join(productUploadDir, localFileName);
+      fs.writeFileSync(localFilePath, file.buffer);
+
+      publicUrl = `/uploads/${productId}/${localFileName}`;
     }
-
-    // Get public URL
-    const { data: publicUrlData } = supabase.storage
-      .from(BUCKET_NAME)
-      .getPublicUrl(fileName);
-
-    const publicUrl = publicUrlData.publicUrl;
 
     // Determine if this should be the primary image
     const existingImagesCount = await prisma.productImage.count({
@@ -73,7 +100,7 @@ export const uploadProductImage = async (req: Request, res: Response): Promise<v
     res.status(201).json(productImage);
   } catch (error) {
     console.error('Error uploading product image:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error while saving product image' });
   }
 };
 
@@ -87,27 +114,32 @@ export const deleteProductImage = async (req: Request, res: Response): Promise<v
       return;
     }
 
-    // Extract path from public URL
-    // URL format: https://[project].supabase.co/storage/v1/object/public/product-images/[productId]/[filename]
+    // If it's a Supabase URL, attempt to delete from Supabase
     const urlParts = image.url.split(`/${BUCKET_NAME}/`);
     if (urlParts.length > 1) {
       const filePath = urlParts[1];
-      
-      // Delete from Supabase
-      const { error: deleteError } = await supabase.storage
-        .from(BUCKET_NAME)
-        .remove([filePath]);
-
-      if (deleteError) {
-        console.error('Supabase delete error:', deleteError);
-        // Continue to delete from DB even if storage fails, to keep DB clean
+      try {
+        await supabase.storage.from(BUCKET_NAME).remove([filePath]);
+      } catch (e) {
+        console.warn('Could not remove file from Supabase storage:', e);
+      }
+    } else if (image.url.startsWith('/uploads/')) {
+      // If it's a local file, remove from disk
+      const localRelPath = image.url.replace(/^\/uploads\//, '');
+      const localAbsPath = path.resolve(process.cwd(), 'public', 'uploads', localRelPath);
+      if (fs.existsSync(localAbsPath)) {
+        try {
+          fs.unlinkSync(localAbsPath);
+        } catch (e) {
+          console.warn('Could not remove local file:', e);
+        }
       }
     }
 
     // Delete from database
     await prisma.productImage.delete({ where: { id } });
 
-    // If it was primary, make another image primary if exists
+    // If it was primary, designate the first remaining image as primary
     if (image.isPrimary) {
       const firstRemaining = await prisma.productImage.findFirst({
         where: { productId: image.productId },
